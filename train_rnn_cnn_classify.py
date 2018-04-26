@@ -3,7 +3,7 @@ import numpy as np
 import os
 import time
 import datetime
-from rnn_CNN_model import RNN_Model
+from rnn_CNN_model import LSTM_CNN_Model
 import data_helper
 
 
@@ -63,7 +63,6 @@ def evaluate(model,session,data,global_steps=None,summary_writer=None):
          feed_dict[model.input_data]=x
          feed_dict[model.target]=y
          feed_dict[model.mask_x]=mask_x
-         #model.assign_new_batch_size(session,len(x))
          state = session.run(model._initial_state)
          for i , (c,h) in enumerate(model._initial_state):
             feed_dict[c]=state[i].c
@@ -86,7 +85,6 @@ def run_epoch(model,session,data,global_steps,train_summary_writer,valid_summary
         feed_dict[model.input_data]=x
         feed_dict[model.target]=y
         feed_dict[model.mask_x]=mask_x
-        #model.assign_new_batch_size(session,len(x))
         fetches = [model.cost,model.accuracy,model.train_op,model.summary]
         state = session.run(model._initial_state)
         for i , (c,h) in enumerate(model._initial_state):
@@ -95,7 +93,6 @@ def run_epoch(model,session,data,global_steps,train_summary_writer,valid_summary
         cost,accuracy,_,summary = session.run(fetches,feed_dict)
         train_summary_writer.add_summary(summary,global_steps)
         train_summary_writer.flush()
-        #valid_accuracy=evaluate(valid_model,session,valid_data,global_steps,valid_summary_writer)
         if(global_steps%100==0):
             print("the %i step, train cost is: %f and the train accuracy is %f "%(global_steps,cost,accuracy))
         global_steps+=1
