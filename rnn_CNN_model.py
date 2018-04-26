@@ -2,7 +2,7 @@
 import tensorflow as tf
 import numpy as np
 
-class RNN_Model(object):
+class LSTM_CNN_Model(object):
 
 
 
@@ -21,8 +21,6 @@ class RNN_Model(object):
         vocabulary_size=config.vocabulary_size
         embed_dim=config.embed_dim
         hidden_layer_num=config.hidden_layer_num
-        #self.new_batch_size = tf.placeholder(tf.int32,shape=[],name="new_batch_size")
-        #self._batch_size_update = tf.assign(self.batch_size,self.new_batch_size)
 
         #build LSTM network
 
@@ -51,17 +49,7 @@ class RNN_Model(object):
                 if time_step>0: tf.get_variable_scope().reuse_variables()
                 (cell_output,state)=cell(inputs[:,time_step,:],state)
                 out_put.append(cell_output)
-
-        #print(out_put)
-
         out_put=out_put*self.mask_x[:,:,None]
-
-        #print(out_put)
-
-        #with tf.name_scope("mean_pooling_layer"):
-
-            #out_put=tf.reduce_sum(out_put,0)/(tf.reduce_sum(self.mask_x,0)[:,None])
-        #print(out_put)
 
         with tf.name_scope("Conv_layer"):
             out_put = tf.transpose(out_put,[1,2,0])
@@ -72,13 +60,8 @@ class RNN_Model(object):
             B_conv = tf.get_variable(name="conv_b", initializer=tf.constant(0.1,shape=[200]))
 
             conv_output = tf.nn.relu(tf.nn.conv2d(out_put , W_conv , strides=[1,1,1,1],padding='VALID') + B_conv)
-            print(conv_output)
             conv_output = tf.reshape(conv_output,[self.batch_size,36,200,1])
             max_pool_out = tf.nn.max_pool(conv_output,ksize=[1,36,1,1],strides=[1,1,1,1],padding='VALID')
-            #max_pool_out = tf.reshape(max_pool_out,[-1,20*64*40])
-            #print(max_pool_out)
-
-            #print(max_pool_out2)
             max_pool_out = tf.reshape(max_pool_out,[self.batch_size,200])
 
 
@@ -137,8 +120,6 @@ class RNN_Model(object):
     def assign_new_lr(self,session,lr_value):
         session.run(self._lr_update,feed_dict={self.new_lr:lr_value})
 
-    #def assign_new_batch_size(self,session,batch_size_value):
-        #session.run(self._batch_size_update,feed_dict={self.new_batch_size:batch_size_value})
 
 
 
